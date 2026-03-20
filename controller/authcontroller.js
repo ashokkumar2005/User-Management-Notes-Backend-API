@@ -15,4 +15,34 @@
     }catch(err){
         next(err)
     }
+ };
+
+ exports.login= async(req,res,next)=>{
+    const {email,password}=req.body;
+    try{
+
+        const user = await User.findOne({email});
+
+        if(!user){
+            return res.status(500).json("User not found")
+        }
+
+        const match= await bcrypt.compare(password,user.password);
+        if(!match){
+           return res.status(500).json("password incorrect");
+        }
+
+     const token= jwt.sign(
+     { id:user._id,role:user.role},
+     process.env.JWT_SECRET,
+     {expiresIn:"1h"}
+     )
+
+     res.json({token});
+
+    }catch(err){
+        next(err);
+    }
  }
+
+ 
